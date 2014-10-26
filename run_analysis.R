@@ -32,9 +32,9 @@ X_test <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
 # These files contain the activity being performed by the test subjects as
 # the X data was recorded.  These are the response variables.  
 y_train <- read.table("./UCI HAR Dataset/train/y_train.txt",
-        header = FALSE, col.names = c("activity"))
+        header = FALSE, col.names = c("activity_num"))
 y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", 
-        header = FALSE, col.names = c("activity"))
+        header = FALSE, col.names = c("activity_num"))
 
 # ***** STEP 4 *****
 # The orginal data files don't contain feature names.  These feature names 
@@ -79,16 +79,22 @@ X_test_extract <- X_test[, col_to_keep]
 # the original dataset as train or test.  This is helpful to identify the
 # original data source after the train and test datasets are combined in the
 # next step.
-train <- cbind(subject_train, X_train, y_train, dataset = "train")
-test <- cbind(subject_test, X_test, y_test, dataset = "test")
+train <- cbind(subject_train, X_train_extract, y_train, dataset = "train")
+test <- cbind(subject_test, X_test_extract, y_test, dataset = "test")
 
 # ***** STEP 1 *****
 # Combines the train and test data set into a single data.frame.
 all_data <- rbind(train, test)
 
+# ***** STEP 3 *****
+# Here the activity lables are imported from the inluded activity_labels.txt
+# file and merged with all_data to provide descriptive activity 
+# names for each feature vector.  
+activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt",
+        header = FALSE, col.names = c("activity_num", "activity"))
 
-
-
+analysis_data <- merge(x = all_data, y = activity_labels, 
+        by.x = "activity_num", by.y ="activity_num", all.x = TRUE)
 
 
 
