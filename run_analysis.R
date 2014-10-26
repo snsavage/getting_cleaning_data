@@ -36,7 +36,6 @@ y_train <- read.table("./UCI HAR Dataset/train/y_train.txt",
 y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", 
         header = FALSE, col.names = c("activity_num"))
 
-# ***** STEP 4 *****
 # The orginal data files don't contain feature names.  These feature names 
 # are included in a seperate file packaged with the dataset download.
 # Here the feature.txt file in imported and the feature names are applied
@@ -86,6 +85,17 @@ test <- cbind(subject_test, X_test_extract, y_test, dataset = "test")
 # Combines the train and test data set into a single data.frame.
 all_data <- rbind(train, test)
 
+# ***** STEP 4 *****
+# Cleans up remaining variable names.  
+
+feature_names <- names(all_data)
+
+feature_names <- sub("\\(\\)", "", feature_names)
+feature_names <- sub("\\-", "_", feature_names)
+feature_names <- sub("\\-", "_", feature_names)
+
+names(all_data) <- feature_names
+
 # ***** STEP 3 *****
 # Here the activity lables are imported from the inluded activity_labels.txt
 # file and merged with all_data to provide descriptive activity 
@@ -96,8 +106,21 @@ activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt",
 analysis_data <- merge(x = all_data, y = activity_labels, 
         by.x = "activity_num", by.y ="activity_num", all.x = TRUE)
 
+# ***** STEP 5 *****
+library(dplyr)
 
+# dplyr is used to create the final tidy data output.  First, two uneeded 
+# columns are dropped activity_num and dataset.  Then, the data is arranged
+# by subject_id and activity for easier readability.  The data is then
+# grouped suject_id and activity.  Finally, the mean is calculated for each
+# group.  
+output <- analysis_data %>%
+        select(subject_id, activity, tBodyAcc_mean_X:fBodyBodyGyroJerkMag_std) %>%
+        arrange(subject_id, activity) %>%
+        group_by(subject_id, activity) %>%
+        summarise_each(funs(mean))
 
+write.table(output, "analysis_output.txt", row.names= FALSE)
 
 
 
